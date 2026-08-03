@@ -242,6 +242,27 @@ a {
   margin-bottom: 0.75rem;
 }
 
+.chart-title-clickable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.chart-title-clickable:hover {
+  color: var(--accent-text);
+}
+
+.shift-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 640px) {
+  .shift-row {
+    grid-template-columns: 1fr;
+  }
+}
+
 .card-header-row {
   display: flex;
   align-items: center;

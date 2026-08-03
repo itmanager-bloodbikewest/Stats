@@ -9,6 +9,8 @@ import {
 } from '../utils/computedStats';
 import DateRangeControl from '../components/DateRangeControl';
 import TopNBarChart from '../components/TopNBarChart';
+import PieChartCard from '../components/PieChartCard';
+import TotalRunsCard from '../components/TotalRunsCard';
 import CoverageGapsCard from '../components/CoverageGapsCard';
 
 export default function DashboardPage() {
@@ -36,11 +38,15 @@ export default function DashboardPage() {
     return () => { cancelled = true; };
   }, []);
 
-  const breakdowns = useMemo(() => {
+  const filteredRuns = useMemo(() => {
     if (!runsRows) return null;
-    const filtered = filterByDateRange(runsRows, r => r.transportDate, range.start, range.end);
-    return computeRunsBreakdowns(filtered);
+    return filterByDateRange(runsRows, r => r.transportDate, range.start, range.end);
   }, [runsRows, range]);
+
+  const breakdowns = useMemo(() => {
+    if (!filteredRuns) return null;
+    return computeRunsBreakdowns(filteredRuns);
+  }, [filteredRuns]);
 
   const shiftsByRider = useMemo(() => {
     if (!shiftHistoryRows) return null;
@@ -63,7 +69,7 @@ export default function DashboardPage() {
     );
   }
 
-  const loading = !breakdowns || !shiftsByRider || !coverageGaps;
+  const loading = !filteredRuns || !breakdowns || !shiftsByRider || !coverageGaps;
 
   return (
     <div className="page">
@@ -74,15 +80,19 @@ export default function DashboardPage() {
         <p className="empty-note">Loading…</p>
       ) : (
         <div className="grid">
+          <TotalRunsCard count={filteredRuns.length} />
           <TopNBarChart title="Runs by item transported" entries={breakdowns.byItem} />
           <TopNBarChart title="Runs by origin hospital" entries={breakdowns.byOrigin} />
           <TopNBarChart title="Runs by destination hospital" entries={breakdowns.byDestination} />
-          <TopNBarChart title="Runs by vehicle" entries={breakdowns.byVehicle} />
-          <TopNBarChart title="Runs by controller" entries={breakdowns.byController} />
+          <PieChartCard title="Runs by vehicle" entries={breakdowns.byVehicle} />
+          <PieChartCard title="Runs by controller" entries={breakdowns.byController} />
+          <PieChartCard title="Meet with other group" entries={breakdowns.byMeetGroup} />
           <TopNBarChart title="Runs by rider" entries={breakdowns.byRider} />
-          <TopNBarChart title="Meet with other group" entries={breakdowns.byMeetGroup} />
-          <TopNBarChart title="Shifts by rider" entries={shiftsByRider} color="var(--green)" />
-          <CoverageGapsCard entries={coverageGaps} />
+
+          <div className="shift-row card-wide">
+            <TopNBarChart title="Shifts by rider" entries={shiftsByRider} color="var(--green)" />
+            <CoverageGapsCard entries={coverageGaps} />
+          </div>
         </div>
       )}
     </div>
