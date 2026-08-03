@@ -1,22 +1,58 @@
-import { useEffect, useState } from 'react';
-import { getComputedStats } from '../api/statsApi';
+import { useEffect, useState, useMemo, useCallback } from 'react';
+import { getRunsData, getShiftData } from '../api/statsApi';
 import { isDevEnv } from '../auth/session';
-import { groupByMetric } from '../utils/computedStats';
-import RunsOverTimeChart from '../components/RunsOverTimeChart';
+import {
+  filterByDateRange,
+  computeRunsBreakdowns,
+  computeShiftsByRider,
+  computeCoverageGapEntries,
+} from '../utils/computedStats';
+import DateRangeControl from '../components/DateRangeControl';
 import TopNBarChart from '../components/TopNBarChart';
 import CoverageGapsCard from '../components/CoverageGapsCard';
 
 export default function DashboardPage() {
-  const [metrics, setMetrics] = useState(null);
+  const [runsRows, setRunsRows] = useState(null);
+  const [shiftHistoryRows, setShiftHistoryRows] = useState(null);
+  const [shiftGapRows, setShiftGapRows] = useState(null);
   const [error, setError] = useState('');
+  const [range, setRange] = useState({ start: null, end: null });
+
+  const handleRangeChange = useCallback(range => setRange(range), []);
 
   useEffect(() => {
     let cancelled = false;
-    getComputedStats(isDevEnv())
-      .then(data => { if (!cancelled) setMetrics(groupByMetric(data.rows)); })
+    const dev = isDevEnv();
+
+    Promise.all([getRunsData(dev), getShiftData(dev)])
+      .then(([runsData, shiftData]) => {
+        if (cancelled) return;
+        setRunsRows(runsData.rows);
+        setShiftHistoryRows(shiftData.shiftHistory);
+        setShiftGapRows(shiftData.shiftGaps);
+      })
       .catch(err => { if (!cancelled) setError(err.message); });
+
     return () => { cancelled = true; };
   }, []);
+
+  const breakdowns = useMemo(() => {
+    if (!runsRows) return null;
+    const filtered = filterByDateRange(runsRows, r => r.transportDate, range.start, range.end);
+    return computeRunsBreakdowns(filtered);
+  }, [runsRows, range]);
+
+  const shiftsByRider = useMemo(() => {
+    if (!shiftHistoryRows) return null;
+    const filtered = filterByDateRange(shiftHistoryRows, r => r.Date, range.start, range.end);
+    return computeShiftsByRider(filtered);
+  }, [shiftHistoryRows, range]);
+
+  const coverageGaps = useMemo(() => {
+    if (!shiftGapRows) return null;
+    const filtered = filterByDateRange(shiftGapRows, r => r.Date, range.start, range.end);
+    return computeCoverageGapEntries(filtered);
+  }, [shiftGapRows, range]);
 
   if (error) {
     return (
@@ -27,30 +63,28 @@ export default function DashboardPage() {
     );
   }
 
-  if (!metrics) {
-    return (
-      <div className="page">
-        <h1>Dashboard</h1>
-        <p className="empty-note">Loading…</p>
-      </div>
-    );
-  }
+  const loading = !breakdowns || !shiftsByRider || !coverageGaps;
 
   return (
     <div className="page">
       <h1>Dashboard</h1>
-      <div className="grid">
-        <RunsOverTimeChart entries={metrics.runs_by_day || []} />
-        <TopNBarChart title="Runs by item transported" entries={metrics.runs_by_item || []} />
-        <TopNBarChart title="Runs by origin hospital" entries={metrics.runs_by_origin || []} />
-        <TopNBarChart title="Runs by destination hospital" entries={metrics.runs_by_destination || []} />
-        <TopNBarChart title="Runs by vehicle" entries={metrics.runs_by_vehicle || []} />
-        <TopNBarChart title="Runs by controller" entries={metrics.runs_by_controller || []} />
-        <TopNBarChart title="Runs by rider" entries={metrics.runs_by_rider || []} />
-        <TopNBarChart title="Meet with other group" entries={metrics.runs_by_meetgroup || []} />
-        <TopNBarChart title="Shifts by rider" entries={metrics.shifts_by_rider || []} color="var(--green)" />
-        <CoverageGapsCard entries={metrics.coverage_gap || []} />
-      </div>
+      <DateRangeControl onRangeChange={handleRangeChange} />
+
+      {loading ? (
+        <p className="empty-note">Loading…</p>
+      ) : (
+        <div className="grid">
+          <TopNBarChart title="Runs by item transported" entries={breakdowns.byItem} />
+          <TopNBarChart title="Runs by origin hospital" entries={breakdowns.byOrigin} />
+          <TopNBarChart title="Runs by destination hospital" entries={breakdowns.byDestination} />
+          <TopNBarChart title="Runs by vehicle" entries={breakdowns.byVehicle} />
+          <TopNBarChart title="Runs by controller" entries={breakdowns.byController} />
+          <TopNBarChart title="Runs by rider" entries={breakdowns.byRider} />
+          <TopNBarChart title="Meet with other group" entries={breakdowns.byMeetGroup} />
+          <TopNBarChart title="Shifts by rider" entries={shiftsByRider} color="var(--green)" />
+          <CoverageGapsCard entries={coverageGaps} />
+        </div>
+      )}
     </div>
   );
 }

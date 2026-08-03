@@ -24,3 +24,8 @@ export function getComputedStats(isDev) {
 export function getRunsData(isDev) {
   return callStatsApi('getRunsData', isDev);
 }
+
+// Returns { shiftHistory: [...], shiftGaps: [...] } (raw rows).
+export function getShiftData(isDev) {
+  return callStatsApi('getShiftData', isDev);
+}

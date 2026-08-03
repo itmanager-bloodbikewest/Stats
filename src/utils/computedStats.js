@@ -129,3 +129,112 @@ export const RANGE_PRESETS = [
   { value: 'lastYear', label: 'Last year' },
   { value: 'custom', label: 'Custom range' },
 ];
+
+// -------------------------------------------------------------------------
+// Client-side aggregation for the dashboard.
+//
+// The dashboard used to read pre-aggregated totals from ComputedStats, but
+// those totals have no date left in them once computed server-side, so a
+// date-range control couldn't filter them. Instead, the dashboard now
+// fetches the raw RunsData / ShiftHistory / ShiftGaps rows (same data the
+// drill-down table uses) and aggregates + filters them here, client-side,
+// driven by one shared range control.
+// -------------------------------------------------------------------------
+
+// Normalizes a date-ish value (Date object, plain "yyyy-MM-dd" string,
+// "dd/MM/yyyy" string, or a Sheets-corrupted ISO timestamp like
+// "2017-03-30T23:00:00.000Z") into a "yyyy-MM-dd" string, using Ireland's
+// calendar date rather than a raw UTC slice — that matters specifically
+// for the corrupted-ISO case, where a naive UTC slice would be off by a
+// day for a meaningful chunk of the year (DST). Returns '' if unparseable.
+export function normalizeDateKey(value) {
+  if (!value) return '';
+
+  let d;
+  if (value instanceof Date) {
+    d = value;
+  } else {
+    const str = String(value).trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str.slice(0, 10);
+
+    const ddmmyyyy = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+    if (ddmmyyyy) {
+      return ddmmyyyy[3] + '-' + ddmmyyyy[2].padStart(2, '0') + '-' + ddmmyyyy[1].padStart(2, '0');
+    }
+
+    d = new Date(str);
+    if (isNaN(d.getTime())) return '';
+  }
+
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Dublin' }).format(d);
+}
+
+// Keeps only rows whose date (extracted via getDateValue) falls within
+// [start, end] inclusive. start/end are "yyyy-MM-dd" strings or null.
+export function filterByDateRange(rows, getDateValue, start, end) {
+  if (!start && !end) return rows;
+  return rows.filter(row => {
+    const key = normalizeDateKey(getDateValue(row));
+    if (!key) return false;
+    if (start && key < start) return false;
+    if (end && key > end) return false;
+    return true;
+  });
+}
+
+function incrementCount(map, key) {
+  if (!key) return;
+  map[key] = (map[key] || 0) + 1;
+}
+
+function splitNames(value) {
+  if (!value) return [];
+  return String(value).split(',').map(s => s.trim()).filter(Boolean); // comma-separated, per agreed format
+}
+
+function toEntries(map) {
+  return Object.entries(map).map(([key, value]) => ({ key, value }));
+}
+
+// Mirrors the backend's computeRunsMetrics, but client-side so it can run
+// against an already date-filtered subset of RunsData.
+export function computeRunsBreakdowns(runsRows) {
+  const byItem = {}, byOrigin = {}, byDestination = {}, byVehicle = {},
+    byController = {}, byRider = {}, byMeetGroup = {};
+
+  runsRows.forEach(r => {
+    if (r.itemsTransported) incrementCount(byItem, String(r.itemsTransported).trim());
+    if (r.originHospital) incrementCount(byOrigin, String(r.originHospital).trim());
+    if (r.destinationHospital) incrementCount(byDestination, String(r.destinationHospital).trim());
+    if (r.vehicleUsed) incrementCount(byVehicle, String(r.vehicleUsed).trim());
+    if (r.controllerName) incrementCount(byController, String(r.controllerName).trim());
+    if (r.meetOtherGroup) incrementCount(byMeetGroup, String(r.meetOtherGroup).trim());
+
+    splitNames(r.riders).forEach(name => incrementCount(byRider, name));
+    splitNames(r.rider2).forEach(name => incrementCount(byRider, name)); // rider2 counts too, per agreed scope
+  });
+
+  return {
+    byItem: toEntries(byItem),
+    byOrigin: toEntries(byOrigin),
+    byDestination: toEntries(byDestination),
+    byVehicle: toEntries(byVehicle),
+    byController: toEntries(byController),
+    byRider: toEntries(byRider),
+    byMeetGroup: toEntries(byMeetGroup),
+  };
+}
+
+export function computeShiftsByRider(shiftHistoryRows) {
+  const byRider = {};
+  shiftHistoryRows.forEach(r => {
+    if (r.Role === 'rider' && r.Name) incrementCount(byRider, String(r.Name).trim());
+  });
+  return toEntries(byRider);
+}
+
+export function computeCoverageGapEntries(shiftGapRows) {
+  return shiftGapRows
+    .filter(r => r.Date && r.ShiftTime)
+    .map(r => ({ key: [normalizeDateKey(r.Date), r.ShiftTime].join('|'), value: 1 }));
+}
