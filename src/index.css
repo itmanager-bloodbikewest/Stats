@@ -1,0 +1,334 @@
+/* =============================================================
+   DESIGN TOKENS
+   Palette: ink-navy (primary/text), blood-bike red (accent, used
+   sparingly for alerts/gaps), neutral grays (backgrounds/borders).
+   Type: Inter for all UI text, Space Mono for numeric/data values —
+   gives stat figures and table numbers a distinct, tabular feel.
+   ============================================================= */
+
+:root {
+  --color-ink: #16233f;
+  --color-ink-soft: #2b3a5c;
+  --color-accent: #c1272d;
+  --color-accent-soft: #e8b4b6;
+  --color-success: #2e7d46;
+  --color-bg: #f5f6f8;
+  --color-surface: #ffffff;
+  --color-border: #e1e4e9;
+  --color-text: #16233f;
+  --color-text-secondary: #5b6472;
+
+  --font-ui: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-data: 'Space Mono', 'SF Mono', monospace;
+
+  --radius: 10px;
+  --shadow-card: 0 1px 2px rgba(22, 35, 63, 0.06), 0 1px 8px rgba(22, 35, 63, 0.04);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-ui);
+  background: var(--color-bg);
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+button, input {
+  font-family: inherit;
+}
+
+a {
+  color: var(--color-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* =============================================================
+   NAVBAR
+   ============================================================= */
+
+.navbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  background: var(--color-ink);
+  color: white;
+  padding: 0.75rem 1rem;
+}
+
+.navbar-brand {
+  font-weight: 800;
+  font-size: 1rem;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.navbar-links {
+  display: flex;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.navbar-link {
+  color: rgba(255, 255, 255, 0.75);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0.4rem 0.7rem;
+  border-radius: 999px;
+}
+
+.navbar-link.active,
+.navbar-link:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.navbar-user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.navbar-name {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.navbar-logout {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  border-radius: 999px;
+  padding: 0.35rem 0.8rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.navbar-logout:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* =============================================================
+   LAYOUT
+   ============================================================= */
+
+.app-main {
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  padding: 1rem;
+  min-width: 0;
+}
+
+.card h2 {
+  font-size: 0.95rem;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.75rem;
+}
+
+.stat-figure {
+  font-family: var(--font-data);
+  font-weight: 700;
+  font-size: 2rem;
+  color: var(--color-ink);
+}
+
+/* =============================================================
+   LOGIN PAGE
+   ============================================================= */
+
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: var(--color-ink);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 360px;
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  padding: 2rem 1.5rem;
+}
+
+.login-title {
+  font-size: 1.3rem;
+  margin-bottom: 0.4rem;
+}
+
+.login-subtitle {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  margin: 0 0 1.5rem;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.login-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-top: 0.6rem;
+}
+
+.login-input {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 0.6rem 0.7rem;
+  font-size: 1rem;
+  min-width: 0;
+  width: 100%;
+}
+
+.login-input:focus {
+  border-color: var(--color-ink);
+}
+
+.login-error {
+  color: var(--color-accent);
+  font-size: 0.85rem;
+  margin: 0.6rem 0 0;
+}
+
+.login-button {
+  margin-top: 1.2rem;
+  background: var(--color-accent);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.7rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.login-button:hover {
+  background: #a51f24;
+}
+
+.login-button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* =============================================================
+   TABLE (drill-down view)
+   ============================================================= */
+
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+th, td {
+  text-align: left;
+  padding: 0.5rem 0.7rem;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+th {
+  background: var(--color-bg);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  position: sticky;
+  top: 0;
+}
+
+td.numeric {
+  font-family: var(--font-data);
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.75rem;
+}
+
+.filters label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  min-width: 0;
+}
+
+.filters select,
+.filters input {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 0.5rem;
+  font-size: 0.9rem;
+  min-width: 0;
+}
