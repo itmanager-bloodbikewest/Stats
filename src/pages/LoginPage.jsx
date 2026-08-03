@@ -34,6 +34,7 @@ export default function LoginPage() {
       setSession({ name: roleResult.name, phone: phone.trim(), role: roleResult.role });
       navigate(redirectTo, { replace: true });
     } catch (err) {
+      console.error('Login failed:', err);
       setError('Something went wrong reaching the login service. Please try again.');
     } finally {
       setSubmitting(false);
@@ -43,7 +44,10 @@ export default function LoginPage() {
   return (
     <div className="login-page">
       <div className="login-card">
-        <h1 className="login-title">Blood Bike West Stats</h1>
+        <div className="login-brand">
+          <img src="/icon.png" alt="" />
+          <h1 className="login-title">Blood Bike West Stats</h1>
+        </div>
         <p className="login-subtitle">Sign in with your usual phone number and password.</p>
 
         <form onSubmit={handleSubmit} className="login-form">

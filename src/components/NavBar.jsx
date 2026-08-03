@@ -12,7 +12,10 @@ export default function NavBar() {
 
   return (
     <nav className="navbar">
-      <span className="navbar-brand">Blood Bike West Stats</span>
+      <span className="navbar-brand">
+        <img src="/icon.png" alt="" />
+        Blood Bike West Stats
+      </span>
       <div className="navbar-links">
         <NavLink to="/" end className={({ isActive }) => isActive ? 'navbar-link active' : 'navbar-link'}>
           Dashboard
