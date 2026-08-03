@@ -54,3 +54,78 @@ export function bucketRunsByDay(dayEntries, granularity) {
     .map(([label, value]) => ({ label, value }))
     .sort((a, b) => a.label.localeCompare(b.label));
 }
+
+// Keeps only entries whose date key falls within [start, end] inclusive.
+// start/end are yyyy-MM-dd strings; either can be blank/null to mean
+// "no lower/upper bound". String comparison works directly since the
+// format is zero-padded and lexicographically sortable.
+export function filterEntriesByRange(entries, start, end) {
+  if (!start && !end) return entries;
+  return entries.filter(({ key }) => {
+    if (start && key < start) return false;
+    if (end && key > end) return false;
+    return true;
+  });
+}
+
+function toDateKey(d) {
+  return d.toISOString().slice(0, 10);
+}
+
+// Computes { start, end } (yyyy-MM-dd) for a named preset, relative to
+// the real current date. Returns { start: null, end: null } for 'all'.
+export function getPresetRange(preset) {
+  const today = new Date();
+  const todayKey = toDateKey(today);
+
+  switch (preset) {
+    case 'last7': {
+      const start = new Date(today);
+      start.setDate(start.getDate() - 6);
+      return { start: toDateKey(start), end: todayKey };
+    }
+    case 'last30': {
+      const start = new Date(today);
+      start.setDate(start.getDate() - 29);
+      return { start: toDateKey(start), end: todayKey };
+    }
+    case 'last90': {
+      const start = new Date(today);
+      start.setDate(start.getDate() - 89);
+      return { start: toDateKey(start), end: todayKey };
+    }
+    case 'thisMonth': {
+      const start = new Date(today.getFullYear(), today.getMonth(), 1);
+      return { start: toDateKey(start), end: todayKey };
+    }
+    case 'lastMonth': {
+      const start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      const end = new Date(today.getFullYear(), today.getMonth(), 0);
+      return { start: toDateKey(start), end: toDateKey(end) };
+    }
+    case 'thisYear': {
+      const start = new Date(today.getFullYear(), 0, 1);
+      return { start: toDateKey(start), end: todayKey };
+    }
+    case 'lastYear': {
+      const start = new Date(today.getFullYear() - 1, 0, 1);
+      const end = new Date(today.getFullYear() - 1, 11, 31);
+      return { start: toDateKey(start), end: toDateKey(end) };
+    }
+    case 'all':
+    default:
+      return { start: null, end: null };
+  }
+}
+
+export const RANGE_PRESETS = [
+  { value: 'all', label: 'All time' },
+  { value: 'last7', label: 'Last 7 days' },
+  { value: 'last30', label: 'Last 30 days' },
+  { value: 'last90', label: 'Last 90 days' },
+  { value: 'thisMonth', label: 'This month' },
+  { value: 'lastMonth', label: 'Last month' },
+  { value: 'thisYear', label: 'This year' },
+  { value: 'lastYear', label: 'Last year' },
+  { value: 'custom', label: 'Custom range' },
+];

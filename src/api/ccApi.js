@@ -31,3 +31,19 @@ export function loginWithReference(phone, password) {
 export function getUserRole(phone) {
   return callCcApi('getUserRole', { phone });
 }
+
+// Password reset — 3 steps, matching Command Centre's own flow exactly:
+//   1. sendResetCode({phone})                       -> { ok } (always ok, never reveals if phone exists)
+//   2. verifyResetCode({phone, code})                -> { ok, resetToken } or { error }
+//   3. updateReference({phone, resetToken, newPassword}) -> { ok } or { error }
+export function sendResetCode(phone) {
+  return callCcApi('sendResetCode', { phone });
+}
+
+export function verifyResetCode(phone, code) {
+  return callCcApi('verifyResetCode', { phone, code });
+}
+
+export function setNewPassword(phone, resetToken, newPassword) {
+  return callCcApi('updateReference', { phone, resetToken, newPassword });
+}

@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { loginWithReference, getUserRole } from '../api/ccApi';
 import { setSession } from '../auth/session';
+import ForgotPasswordForm from './ForgotPasswordForm';
 
 export default function LoginPage() {
+  const [mode, setMode] = useState('login'); // 'login' | 'forgot'
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -48,38 +50,51 @@ export default function LoginPage() {
           <img src="/icon.png" alt="" />
           <h1 className="login-title">Blood Bike West Stats</h1>
         </div>
-        <p className="login-subtitle">Sign in with your usual phone number and password.</p>
 
-        <form onSubmit={handleSubmit} className="login-form">
-          <label className="login-label" htmlFor="phone">Phone number</label>
-          <input
-            id="phone"
-            type="tel"
-            inputMode="tel"
-            autoComplete="tel"
-            value={phone}
-            onChange={e => setPhone(e.target.value)}
-            required
-            className="login-input"
-          />
+        {mode === 'login' ? (
+          <>
+            <p className="login-subtitle">Sign in with your usual phone number and password.</p>
 
-          <label className="login-label" htmlFor="password">Password</label>
-          <input
-            id="password"
-            type="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            required
-            className="login-input"
-          />
+            <form onSubmit={handleSubmit} className="login-form">
+              <label className="login-label" htmlFor="phone">Phone number</label>
+              <input
+                id="phone"
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                value={phone}
+                onChange={e => setPhone(e.target.value)}
+                required
+                className="login-input"
+              />
 
-          {error && <p className="login-error" role="alert">{error}</p>}
+              <label className="login-label" htmlFor="password">Password</label>
+              <input
+                id="password"
+                type="password"
+                autoComplete="current-password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required
+                className="login-input"
+              />
 
-          <button type="submit" className="login-button" disabled={submitting}>
-            {submitting ? 'Signing in…' : 'Sign in'}
-          </button>
-        </form>
+              <div className="login-link-row">
+                <button type="button" className="login-link" onClick={() => { setError(''); setMode('forgot'); }}>
+                  Forgot password?
+                </button>
+              </div>
+
+              {error && <p className="login-error" role="alert">{error}</p>}
+
+              <button type="submit" className="login-button" disabled={submitting}>
+                {submitting ? 'Signing in…' : 'Sign in'}
+              </button>
+            </form>
+          </>
+        ) : (
+          <ForgotPasswordForm onBackToLogin={() => setMode('login')} />
+        )}
       </div>
     </div>
   );

@@ -417,6 +417,41 @@ a {
   cursor: default;
 }
 
+.button-secondary {
+  background: transparent;
+  border: 1px solid var(--border-hi);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 0.6rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.button-secondary:hover {
+  background: var(--chip-active-bg);
+}
+
+.login-link-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.4rem;
+}
+
+.login-link {
+  background: none;
+  border: none;
+  color: var(--accent-text);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+}
+
+.login-link:hover {
+  text-decoration: underline;
+}
+
 /* =============================================================
    TABLE (drill-down view)
    ============================================================= */
