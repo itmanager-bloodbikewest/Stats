@@ -228,6 +228,34 @@ a {
   box-shadow: var(--shadow-card);
   padding: 1rem;
   min-width: 0;
+  position: relative;
+}
+
+.card-select {
+  position: absolute;
+  top: 0.85rem;
+  right: 0.85rem;
+  cursor: pointer;
+}
+
+.card-select input {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+
+.pdf-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.pdf-toolbar-count {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-right: auto;
 }
 
 .card-wide {

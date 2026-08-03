@@ -1,21 +1,36 @@
-import { useState } from 'react';
+// Presentational shell for a dashboard card: title (optionally clickable
+// to expand/collapse to full width), an optional PDF-selection checkbox,
+// and a forwarded ref so the card's DOM node can be captured for PDF
+// export. Expand state and selection state are owned by the parent card
+// component (TopNBarChart, PieChartCard, etc.) rather than here, so each
+// chart can react to its own expanded state (e.g. showing more data).
+import { forwardRef } from 'react';
 
-// Wraps a chart in a card whose title can be clicked to toggle the card
-// between its normal grid size and a full-width ("card-wide") row —
-// reused by every chart type so the expand behavior stays consistent.
-export default function ChartCard({ title, children }) {
-  const [expanded, setExpanded] = useState(false);
-
+const ChartCard = forwardRef(function ChartCard(
+  { title, expandable = true, expanded, onToggleExpand, selectable = false, selected, onToggleSelect, children },
+  ref
+) {
   return (
-    <div className={expanded ? 'card card-wide' : 'card'}>
-      <h2
-        className="chart-title-clickable"
-        onClick={() => setExpanded(e => !e)}
-        title={expanded ? 'Click to collapse' : 'Click to expand'}
-      >
-        {title}
-      </h2>
+    <div ref={ref} className={expanded ? 'card card-wide' : 'card'}>
+      {selectable && (
+        <label className="card-select" title="Include in PDF export">
+          <input type="checkbox" checked={!!selected} onChange={onToggleSelect} />
+        </label>
+      )}
+      {expandable ? (
+        <h2
+          className="chart-title-clickable"
+          onClick={onToggleExpand}
+          title={expanded ? 'Click to collapse' : 'Click to expand'}
+        >
+          {title}
+        </h2>
+      ) : (
+        <h2>{title}</h2>
+      )}
       {children}
     </div>
   );
-}
+});
+
+export default ChartCard;

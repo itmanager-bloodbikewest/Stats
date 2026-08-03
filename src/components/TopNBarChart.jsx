@@ -1,13 +1,28 @@
+import { useState, forwardRef } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LabelList, ResponsiveContainer } from 'recharts';
 import { topN } from '../utils/computedStats';
 import ChartCard from './ChartCard';
 
-export default function TopNBarChart({ title, entries, n = 10, color = 'var(--accent)' }) {
-  const { top, restCount, restTotal } = topN(entries, n);
+const TopNBarChart = forwardRef(function TopNBarChart(
+  { title, entries, n = 10, color = 'var(--accent)', selectable, selected, onToggleSelect },
+  ref
+) {
+  const [expanded, setExpanded] = useState(false);
+  // Expanded shows every entry, not just the top N.
+  const effectiveN = expanded ? entries.length : n;
+  const { top, restCount, restTotal } = topN(entries, effectiveN);
   const data = top.map(e => ({ name: e.key || '(blank)', value: e.value }));
 
   return (
-    <ChartCard title={title}>
+    <ChartCard
+      ref={ref}
+      title={title}
+      expanded={expanded}
+      onToggleExpand={() => setExpanded(e => !e)}
+      selectable={selectable}
+      selected={selected}
+      onToggleSelect={onToggleSelect}
+    >
       {data.length === 0 ? (
         <p className="empty-note">No data yet.</p>
       ) : (
@@ -28,4 +43,6 @@ export default function TopNBarChart({ title, entries, n = 10, color = 'var(--ac
       )}
     </ChartCard>
   );
-}
+});
+
+export default TopNBarChart;

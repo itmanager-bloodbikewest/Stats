@@ -1,8 +1,22 @@
-export default function TotalRunsCard({ count }) {
+import { forwardRef } from 'react';
+import ChartCard from './ChartCard';
+
+const TotalRunsCard = forwardRef(function TotalRunsCard(
+  { count, selectable, selected, onToggleSelect },
+  ref
+) {
   return (
-    <div className="card">
-      <h2>Total runs in period</h2>
+    <ChartCard
+      ref={ref}
+      title="Total runs in period"
+      expandable={false}
+      selectable={selectable}
+      selected={selected}
+      onToggleSelect={onToggleSelect}
+    >
       <div className="stat-figure">{count}</div>
-    </div>
+    </ChartCard>
   );
-}
+});
+
+export default TotalRunsCard;

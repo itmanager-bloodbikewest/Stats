@@ -1,4 +1,10 @@
-export default function CoverageGapsCard({ entries }) {
+import { forwardRef } from 'react';
+import ChartCard from './ChartCard';
+
+const CoverageGapsCard = forwardRef(function CoverageGapsCard(
+  { entries, selectable, selected, onToggleSelect },
+  ref
+) {
   const count = entries.length;
 
   const recent = [...entries]
@@ -10,8 +16,14 @@ export default function CoverageGapsCard({ entries }) {
     });
 
   return (
-    <div className="card">
-      <h2>Shift coverage gaps</h2>
+    <ChartCard
+      ref={ref}
+      title="Shift coverage gaps"
+      expandable={false}
+      selectable={selectable}
+      selected={selected}
+      onToggleSelect={onToggleSelect}
+    >
       <div className="stat-figure">{count}</div>
       <p className="chart-footnote">rider shifts with nobody signed up</p>
       {recent.length > 0 && (
@@ -21,6 +33,8 @@ export default function CoverageGapsCard({ entries }) {
           ))}
         </ul>
       )}
-    </div>
+    </ChartCard>
   );
-}
+});
+
+export default CoverageGapsCard;

@@ -1,21 +1,32 @@
+import { useState, forwardRef } from 'react';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { topN } from '../utils/computedStats';
 import ChartCard from './ChartCard';
 
-// Drawn from the CC-matched theme tokens, cycled if there are more slices
-// than colors.
 const PIE_COLORS = [
   'var(--accent)', 'var(--green)', 'var(--orange)', 'var(--red)',
   'var(--purple)', 'var(--accent-text)', 'var(--muted)', 'var(--border-hi)',
 ];
 
-export default function PieChartCard({ title, entries, n = 8 }) {
+const PieChartCard = forwardRef(function PieChartCard(
+  { title, entries, n = 8, selectable, selected, onToggleSelect },
+  ref
+) {
+  const [expanded, setExpanded] = useState(false);
   const { top, restCount, restTotal } = topN(entries, n);
   const data = top.map(e => ({ name: e.key || '(blank)', value: e.value }));
   if (restCount > 0) data.push({ name: `Other (${restCount})`, value: restTotal });
 
   return (
-    <ChartCard title={title}>
+    <ChartCard
+      ref={ref}
+      title={title}
+      expanded={expanded}
+      onToggleExpand={() => setExpanded(e => !e)}
+      selectable={selectable}
+      selected={selected}
+      onToggleSelect={onToggleSelect}
+    >
       {data.length === 0 ? (
         <p className="empty-note">No data yet.</p>
       ) : (
@@ -42,4 +53,6 @@ export default function PieChartCard({ title, entries, n = 8 }) {
       )}
     </ChartCard>
   );
-}
+});
+
+export default PieChartCard;
