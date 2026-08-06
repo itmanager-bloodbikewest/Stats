@@ -1,11 +1,20 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { getSession, clearSession } from '../auth/session';
+import { logout } from '../api/referenceAuthApi';
 
 export default function NavBar() {
   const session = getSession();
   const navigate = useNavigate();
 
-  function handleLogout() {
+  async function handleLogout() {
+    // Invalidate server-side first, but don't let a failed/slow network
+    // call trap the person on the page — clear locally and navigate away
+    // regardless of the outcome.
+    try {
+      if (session?.token) await logout(session.token);
+    } catch {
+      // ignore - local logout still proceeds below
+    }
     clearSession();
     navigate('/login', { replace: true });
   }

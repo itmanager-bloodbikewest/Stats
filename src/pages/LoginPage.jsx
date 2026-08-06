@@ -1,11 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { loginWithReference, getUserRole } from '../api/ccApi';
+import { loginWithReference } from '../api/referenceAuthApi';
 import { setSession } from '../auth/session';
-import ForgotPasswordForm from './ForgotPasswordForm';
 
 export default function LoginPage() {
-  const [mode, setMode] = useState('login'); // 'login' | 'forgot'
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -15,25 +13,37 @@ export default function LoginPage() {
 
   const redirectTo = location.state?.from?.pathname || '/';
 
+  // reset-widget.js wires up [data-bbw-reset-trigger] elements on
+  // DOMContentLoaded, which happens before React renders this page — so
+  // the "Forgot password?" button below needs the widget to re-scan for
+  // triggers once it's actually in the DOM.
+  useEffect(() => {
+    window.BBWReset && window.BBWReset.attachTriggers();
+  }, []);
+
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
     setSubmitting(true);
 
     try {
-      const loginResult = await loginWithReference(phone.trim(), password);
-      if (loginResult.error) {
-        setError(loginResult.error);
+      const result = await loginWithReference(phone.trim(), password);
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+      // Success has no `ok` field — check for the token instead.
+      if (!result.token) {
+        setError('Something went wrong signing in. Please try again.');
         return;
       }
 
-      const roleResult = await getUserRole(phone.trim());
-      if (!roleResult.found) {
-        setError('Logged in, but could not find your role. Please contact your IT manager.');
-        return;
-      }
-
-      setSession({ name: roleResult.name, phone: phone.trim(), role: roleResult.role });
+      setSession({
+        name: result.user.name,
+        phone: result.user.phone,
+        role: result.user.role,
+        token: result.token,
+      });
       navigate(redirectTo, { replace: true });
     } catch (err) {
       console.error('Login failed:', err);
@@ -51,50 +61,44 @@ export default function LoginPage() {
           <h1 className="login-title">Blood Bike West Stats</h1>
         </div>
 
-        {mode === 'login' ? (
-          <>
-            <p className="login-subtitle">Sign in with your usual phone number and password.</p>
+        <p className="login-subtitle">Sign in with your usual phone number and password.</p>
 
-            <form onSubmit={handleSubmit} className="login-form">
-              <label className="login-label" htmlFor="phone">Phone number</label>
-              <input
-                id="phone"
-                type="tel"
-                inputMode="tel"
-                autoComplete="tel"
-                value={phone}
-                onChange={e => setPhone(e.target.value)}
-                required
-                className="login-input"
-              />
+        <form onSubmit={handleSubmit} className="login-form">
+          <label className="login-label" htmlFor="phone">Phone number</label>
+          <input
+            id="phone"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            value={phone}
+            onChange={e => setPhone(e.target.value)}
+            required
+            className="login-input"
+          />
 
-              <label className="login-label" htmlFor="password">Password</label>
-              <input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                required
-                className="login-input"
-              />
+          <label className="login-label" htmlFor="password">Password</label>
+          <input
+            id="password"
+            type="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            required
+            className="login-input"
+          />
 
-              <div className="login-link-row">
-                <button type="button" className="login-link" onClick={() => { setError(''); setMode('forgot'); }}>
-                  Forgot password?
-                </button>
-              </div>
+          <div className="login-link-row">
+            <button type="button" className="login-link" data-bbw-reset-trigger>
+              Forgot password?
+            </button>
+          </div>
 
-              {error && <p className="login-error" role="alert">{error}</p>}
+          {error && <p className="login-error" role="alert">{error}</p>}
 
-              <button type="submit" className="login-button" disabled={submitting}>
-                {submitting ? 'Signing in…' : 'Sign in'}
-              </button>
-            </form>
-          </>
-        ) : (
-          <ForgotPasswordForm onBackToLogin={() => setMode('login')} />
-        )}
+          <button type="submit" className="login-button" disabled={submitting}>
+            {submitting ? 'Signing in…' : 'Sign in'}
+          </button>
+        </form>
       </div>
     </div>
   );

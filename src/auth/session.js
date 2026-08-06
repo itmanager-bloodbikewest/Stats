@@ -15,8 +15,8 @@ export function isDevEnv() {
   return window.location.hostname.startsWith('dev.');
 }
 
-export function setSession({ name, phone, role }) {
-  const value = encodeURIComponent(JSON.stringify({ name, phone, role }));
+export function setSession({ name, phone, role, token }) {
+  const value = encodeURIComponent(JSON.stringify({ name, phone, role, token }));
   // NOTE: the `domain` attribute only takes effect when actually served
   // from a *.bloodbikewest.ie host — on localhost during development the
   // browser ignores it and the cookie is simply host-only, which is fine
@@ -35,7 +35,7 @@ export function getSession() {
   try {
     const raw = match.slice(COOKIE_NAME.length + 1);
     const parsed = JSON.parse(decodeURIComponent(raw));
-    if (!parsed || !parsed.phone) return null;
+    if (!parsed || !parsed.phone || !parsed.token) return null;
     return parsed;
   } catch {
     return null;
