@@ -6,6 +6,7 @@ import { setSession } from '../auth/session';
 export default function LoginPage() {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
@@ -77,15 +78,25 @@ export default function LoginPage() {
           />
 
           <label className="login-label" htmlFor="password">Password</label>
-          <input
-            id="password"
-            type="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            required
-            className="login-input"
-          />
+          <div className="login-pwwrap">
+            <input
+              id="password"
+              type={showPassword ? 'text' : 'password'}
+              autoComplete="current-password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              required
+              className="login-input"
+            />
+            <button
+              type="button"
+              className="login-pwtoggle"
+              onClick={() => setShowPassword(v => !v)}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+            >
+              {showPassword ? '🙈' : '👁'}
+            </button>
+          </div>
 
           <div className="login-link-row">
             <button type="button" className="login-link" data-bbw-reset-trigger>

@@ -436,6 +436,28 @@ a {
   border-color: var(--accent);
 }
 
+.login-pwwrap {
+  position: relative;
+}
+
+.login-pwwrap .login-input {
+  padding-right: 2.4rem;
+}
+
+.login-pwtoggle {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  color: var(--muted);
+  padding: 0.2rem;
+  line-height: 1;
+}
+
 .login-error {
   background: var(--error-bg);
   color: var(--error-text);
